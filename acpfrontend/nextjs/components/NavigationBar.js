@@ -8,6 +8,10 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ShoppingBagIcon from "@mui/icons-material/ShoppingBag"; // Shopping bag icon
@@ -17,14 +21,23 @@ import { useRouter } from "next/router";
 const NavigationLayout = ({ children }) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchActive, setIsSearchActive] = useState(false);  // New state to control search activation
+  const [isSearchActive, setIsSearchActive] = useState(false); // State to control search activation
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // State for the Drawer
+
+  // Simulated user data
+  const user = {
+    username: "JohnDoe123",
+    profile: "View Profile",
+    points: 1200,
+    history: "Buying History",
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery) {
       // Perform the search
       router.push(`/result?query=${searchQuery}`);
-      
+
       // Clear the search input and collapse the search bar
       setSearchQuery("");
       setIsSearchActive(false);
@@ -38,6 +51,20 @@ const NavigationLayout = ({ children }) => {
     }
   };
 
+  // Function to toggle the Drawer
+  const toggleDrawer = (open) => (event) => {
+    if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setIsDrawerOpen(open);
+  };
+
+  // Function to handle profile and buying history navigation
+  const handleNavigation = (path) => {
+    router.push(path); // Navigate to the desired path
+    setIsDrawerOpen(false); // Close the drawer after navigation
+  };
+
   return (
     <>
       <AppBar position="sticky" sx={{ backgroundColor: "#FA86C4", padding: "10px 20px" }}>
@@ -45,7 +72,10 @@ const NavigationLayout = ({ children }) => {
           {/* Logo and App Name */}
           <Link href={"/"} style={{ textDecoration: "none", color: "inherit" }}>
             <Box display="flex" alignItems="center">
-              <ShoppingBagIcon sx={{ color: "#000000", fontSize: 30, marginRight: "10px" }} />
+              <ShoppingBagIcon
+                sx={{ color: "#000000", fontSize: 30, marginRight: "10px" }}
+                onClick={toggleDrawer(true)} // Open drawer on bag icon click
+              />
               <Typography variant="h6" sx={{ fontWeight: 500, color: "#000000" }}>
                 PickMai
               </Typography>
@@ -60,7 +90,7 @@ const NavigationLayout = ({ children }) => {
             {/* Search Button/Bar */}
             <Box
               component="form"
-              onClick={() => setIsSearchActive(true)}  // Clicking anywhere on the box activates the search bar
+              onClick={() => setIsSearchActive(true)} // Clicking anywhere on the box activates the search bar
               onSubmit={handleSearchSubmit}
               sx={{
                 display: "flex",
@@ -69,10 +99,10 @@ const NavigationLayout = ({ children }) => {
                 borderRadius: "4px",
                 paddingLeft: 1,
                 paddingRight: 1,
-                transition: "width 0.4s ease",  // Smooth transition for expanding the search bar
-                width: isSearchActive ? 250 : 100,  // Expands on click
-                cursor: "pointer",  // Entire box is clickable
-                overflow: "hidden",  // Ensure text doesn't overflow when collapsed
+                transition: "width 0.4s ease", // Smooth transition for expanding the search bar
+                width: isSearchActive ? 250 : 150, // Expanded width on click, and larger default width
+                cursor: "pointer", // Entire box is clickable
+                overflow: "hidden", // Ensure text doesn't overflow when collapsed
               }}
             >
               {isSearchActive ? (
@@ -82,16 +112,25 @@ const NavigationLayout = ({ children }) => {
                   placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onBlur={handleSearchBlur}  // Collapse back if clicked outside
+                  onBlur={handleSearchBlur} // Collapse back if clicked outside
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
                         <SearchIcon />
                       </InputAdornment>
                     ),
-                    sx: { width: "100%" },  // Occupies full space when active
+                    sx: {
+                      width: "100%",
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent", // Remove the outline border
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "transparent", // Remove the blue border on focus
+                        boxShadow: "none", // Remove the focus shadow
+                      },
+                    }, // Occupies full space when active
                   }}
-                  autoFocus  // Automatically focus the input when active
+                  autoFocus // Automatically focus the input when active
                 />
               ) : (
                 <Box display="flex" alignItems="center">
@@ -140,6 +179,38 @@ const NavigationLayout = ({ children }) => {
           </Box>
         </Toolbar>
       </AppBar>
+
+      {/* Drawer for user tab options */}
+      <Drawer anchor="left" open={isDrawerOpen} onClose={toggleDrawer(false)}>
+        <Box
+          sx={{ width: 300 }} // Adjusted width for better UI
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
+          <List>
+            {/* Username at the top in bold */}
+            <ListItem>
+              <ListItemText
+                primary={user.username}
+                primaryTypographyProps={{ fontWeight: "bold", fontSize: "18px" }} // Bold and larger font for username
+              />
+            </ListItem>
+
+            {/* Profile, Points, and Buying History options */}
+            <ListItem button onClick={() => handleNavigation('/home')}>
+              <ListItemText primary={user.profile} />
+            </ListItem>
+            <ListItem button>
+              <ListItemText primary={`Points: ${user.points}`} />
+            </ListItem>
+            <ListItem button onClick={() => handleNavigation('/page1')}>
+              <ListItemText primary={user.history} />
+            </ListItem>
+          </List>
+        </Box>
+      </Drawer>
+
       <main>{children}</main>
     </>
   );
