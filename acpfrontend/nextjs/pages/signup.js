@@ -11,9 +11,20 @@ export default function SignUp() {
   const [passwordError, setPasswordError] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  // Client-side navigation after successful signup
+  const redirectToLogin = () => {
+    // Ensure window is accessed only in the browser
+    if (typeof window !== 'undefined') {
+      window.location.href = "/login";
+    }
+  };
+
+  const handleSubmit = async(e) => {
+    e.preventDefault();
     setErrorMessage("");
 
     // Basic validation
@@ -50,13 +61,41 @@ export default function SignUp() {
     }
 
     // Log the form values (can be replaced with actual sign-up logic)
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
-
-    // On successful signup, redirect to login page
-    window.location.href = "/login";
-  };
+    //console.log("Name:", name);
+    //console.log("Email:", email);
+    //console.log("Password:", password);
+    try {
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: name,
+          email: email,
+          password_hash: password,
+        }),
+      });
+ 
+ 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+ 
+ 
+      const data = await response.json();
+      setSnackbarMessage('Registration successful!');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
+      // Redirect after successful registration
+      redirectToLogin();
+    }catch (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+    }
+  };  
 
   return (
     <Box

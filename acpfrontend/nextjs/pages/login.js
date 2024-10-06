@@ -1,35 +1,82 @@
 import React, { useState } from "react";
 import { Box, Button, TextField, Typography, Link, Paper } from "@mui/material";
 
-export default function SimpleLogin() {
+export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+//export default function SimpleLogin() {
+//  const [email, setEmail] = useState("");
+//  const [password, setPassword] = useState("");
+//  const [emailError, setEmailError] = useState(false);
+//  const [passwordError, setPasswordError] = useState(false);
 
-  const handleSignIn = (e) => {
+  //const handleSignIn = (e) => {
+  //  e.preventDefault();
+//
+  //  // Basic client-side validation
+  //  let valid = true;
+//
+  //  if (!email) {
+  //    setEmailError(true);
+  //    valid = false;
+  //  } else {
+  //    setEmailError(false);
+  //  }
+//
+  //  if (!password) {
+  //    setPasswordError(true);
+  //    valid = false;
+  //  } else {
+  //    setPasswordError(false);
+  //  }
+//
+  //  if (valid) {
+  //    // Redirect directly to the home page if both fields are valid
+  //    window.location.href = "/home";
+  //  }
+  //};
+  const handleSnackbarClose = () => {
+    setOpenSnackbar(false);
+  };
+ 
+ 
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic client-side validation
-    let valid = true;
-
-    if (!email) {
-      setEmailError(true);
-      valid = false;
-    } else {
-      setEmailError(false);
-    }
-
-    if (!password) {
-      setPasswordError(true);
-      valid = false;
-    } else {
-      setPasswordError(false);
-    }
-
-    if (valid) {
+    try {
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password_hash: password,
+        }),
+      });
+ 
+ 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Login failed');
+      }
+ 
+ 
+      const data = await response.json();
+      setSnackbarMessage('Login successful!');
+      setSnackbarSeverity('success');
+      setOpenSnackbar(true);
+      // Handle successful login (e.g., redirect)
       // Redirect directly to the home page if both fields are valid
       window.location.href = "/home";
+    } catch (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
     }
   };
 
@@ -49,7 +96,7 @@ export default function SimpleLogin() {
           PickMai
         </Typography>
 
-        <Box component="form" onSubmit={handleSignIn} display="flex" flexDirection="column" gap={2}>
+        <Box component="form" onSubmit={handleLoginSubmit} display="flex" flexDirection="column" gap={2}>
           <TextField
             label="Username or Email"
             type="text"
