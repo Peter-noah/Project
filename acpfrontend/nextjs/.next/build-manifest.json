@@ -12,6 +12,14 @@
   ],
   "rootMainFiles": [],
   "pages": {
+<<<<<<< HEAD
+=======
+    "/": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/index.js"
+    ],
+>>>>>>> 331d14c4ffa0e81d49e0378faa4839f8dd99ba0a
     "/_app": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
@@ -22,6 +30,39 @@
       "static/chunks/main.js",
       "static/chunks/pages/_error.js"
     ],
+<<<<<<< HEAD
+=======
+    "/about": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/about.js"
+    ],
+    "/cart": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/cart.js"
+    ],
+    "/checkout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/checkout.js"
+    ],
+    "/contact": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/contact.js"
+    ],
+    "/forgot-password": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/forgot-password.js"
+    ],
+    "/help": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/help.js"
+    ],
+>>>>>>> 331d14c4ffa0e81d49e0378faa4839f8dd99ba0a
     "/home": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",
@@ -31,6 +72,19 @@
       "static/chunks/webpack.js",
       "static/chunks/main.js",
       "static/chunks/pages/login.js"
+<<<<<<< HEAD
+=======
+    ],
+    "/page1": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/page1.js"
+    ],
+    "/result": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/result.js"
+>>>>>>> 331d14c4ffa0e81d49e0378faa4839f8dd99ba0a
     ]
   },
   "ampFirstPages": []

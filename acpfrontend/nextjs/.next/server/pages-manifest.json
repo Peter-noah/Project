@@ -1,7 +1,24 @@
 {
+<<<<<<< HEAD
   "/_document": "pages/_document.js",
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/home": "pages/home.js",
   "/login": "pages/login.js"
+=======
+  "/_app": "pages/_app.js",
+  "/_document": "pages/_document.js",
+  "/_error": "pages/_error.js",
+  "/login": "pages/login.js",
+  "/forgot-password": "pages/forgot-password.js",
+  "/": "pages/index.js",
+  "/home": "pages/home.js",
+  "/help": "pages/help.js",
+  "/contact": "pages/contact.js",
+  "/result": "pages/result.js",
+  "/about": "pages/about.js",
+  "/page1": "pages/page1.js",
+  "/cart": "pages/cart.js",
+  "/checkout": "pages/checkout.js"
+>>>>>>> 331d14c4ffa0e81d49e0378faa4839f8dd99ba0a
 }
