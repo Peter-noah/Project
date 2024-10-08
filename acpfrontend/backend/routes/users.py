@@ -4,7 +4,6 @@ from typing import Optional
 from datetime import datetime
 from database import *  # Ensure your database functions are imported
 
-
 router = APIRouter()
 
 
@@ -33,8 +32,8 @@ class User(BaseModel):
 
 # Pydantic model for login
 class UserLogin(BaseModel):
-   email: str
-   password_hash: str
+    identifier: str
+    password_hash: str
 
 
 # Endpoint to create a new user
@@ -44,7 +43,7 @@ async def create_user(user: UserCreate):
    existing_user = await get_user(user.username)
    if existing_user:
       raise HTTPException(status_code=400, detail="Username already exists")
-
+   
    result = await insert_user(user.username, user.password_hash, user.email)
    if result is None:
       raise HTTPException(status_code=400, detail="Error creating user")
@@ -80,20 +79,21 @@ async def delete_user_endpoint(user_id: int):
    return {"detail": "User deleted"}
 
 
-# Endpoint for user login
+
+
 @router.post("/users/login")
-async def login_user(user: UserLogin):
-   # Fetch user from the database
-   db_user = await get_user_by_email(user.email,user.password_hash)
-  
-   if db_user is None:
-      raise HTTPException(status_code=404, detail="User not found")
+async def login(user: UserLogin):
+    # Fetch user from the database
+    db_user = await get_user_by_username_or_email(user.identifier, user.password_hash)
 
+    # If user not found, raise an exception
+    if not db_user:
+        raise HTTPException(status_code=400, detail="Invalid username/email or password")
 
-   # If login is successful, you can return user info (omit password hash)
-   return {
-      "user_id": db_user.user_id,
-      "username": db_user.username,
-      "email": db_user.email,
-      "created_at": db_user.created_at
-   }
+    # If login is successful, return user info (omit password hash)
+    return {
+        "user_id": db_user.user_id,
+        "username": db_user.username,
+        "email": db_user.email,
+        "created_at": db_user.created_at
+    }

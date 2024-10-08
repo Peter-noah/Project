@@ -40,10 +40,14 @@ async def get_user(username: str):
    return await database.fetch_one(query=query, values={"username": username})
 
 
-# Function to select a user by email from the users table
-async def get_user_by_email(email: str,password_hash:str):
-   query = "SELECT * FROM users WHERE email = :email and password_hash = :password_hash"
-   return await database.fetch_one(query=query, values={"email": email,"password_hash": password_hash})
+async def get_user_by_username_or_email(identifier: str, password_hash: str):
+    query = """
+    SELECT * FROM users 
+    WHERE (email = :identifier OR username = :identifier) 
+    AND password_hash = :password_hash
+    """
+    return await database.fetch_one(query=query, values={"identifier": identifier, "password_hash": password_hash})
+
 
 
 # Function to update a user in the users table
