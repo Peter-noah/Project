@@ -179,8 +179,6 @@ import React, { useState } from "react";
 import { Box, Button, Snackbar, TextField, Typography, Link, Paper, Alert} from "@mui/material";
 
 export default function AuthPage() {
- const [loginEmail, setLoginEmail] = useState('');
- const [loginPassword, setLoginPassword] = useState('');
  const [registerName, setRegisterName] = useState('');
  const [registerEmail, setRegisterEmail] = useState('');
  const [registerPassword, setRegisterPassword] = useState('');
@@ -200,12 +198,35 @@ export default function AuthPage() {
  };
 
  const handleRegisterSubmit = async (e) => {
-   e.preventDefault();
-   if (registerPassword !== registerConfirmPassword) {
-     setSnackbarMessage('Passwords do not match');
-     setSnackbarSeverity('error');
-     setOpenSnackbar(true);
-     return;
+   e.preventDefault(); 
+   //Basic validation
+ if (!registerName) {
+   setNameError(true);
+   setErrorMessage("Full name is required.");
+   return;
+ } else {
+   setNameError(false);
+}
+ if (!/\S+@\S+\.\S+/.test(registerEmail)) {
+   setEmailError(true);
+   setErrorMessage("Please enter a valid email address.");
+   return;
+ } else {
+   setEmailError(false);
+}
+ if (registerPassword.length < 6) {
+   setPasswordError(true);
+   setErrorMessage("Password must be at least 6 characters long.");
+   return;
+ } else {
+   setPasswordError(false);
+}
+ if (registerPassword !== registerConfirmPassword) {
+   setConfirmPasswordError(true);
+   setErrorMessage("Passwords do not match.");
+   return;
+ } else {
+   setConfirmPasswordError(false);
    }
 
 

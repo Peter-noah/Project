@@ -68,3 +68,23 @@ async def delete_user(user_id: int):
    return await database.fetch_one(query=query, values={"user_id": user_id})
 
 
+# Function to insert a new shop into the shops table
+async def insert_shop(shop_name: str, website_url: str):
+   query = """
+   INSERT INTO shops (shop_name, website_url)
+   VALUES (:shop_name, :website_url)
+   RETURNING shop_id, shop_name, website_url
+   """
+   values = {"shop_name": shop_name, "website_url": website_url}
+   return await database.fetch_one(query=query, values=values)
+
+
+# Function to select a shop by shop_id from the shops table
+async def get_shop(shop_name: str):
+   query = "SELECT * FROM shops WHERE shop_name = :shop_name"
+   return await database.fetch_one(query=query, values={"shop_name": shop_name})
+
+# Function to delete a user from the users table
+async def delete_shop(user_id: int):
+   query = "DELETE FROM shops WHERE shop_id = :shop_id RETURNING *"
+   return await database.fetch_one(query=query, values={"user_id": user_id})
