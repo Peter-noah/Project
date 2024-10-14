@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   nextjs:
     build:
@@ -6,7 +8,7 @@ services:
       - "3000:3000"
     volumes:
       - ./nextjs:/src
-      - /src/node_modules # This masks the node_modules directory from the host system and prevents it from being mapped from your local filesystem. The container will manage its own node_modules directory.
+      - /src/node_modules  # Let the container manage its own node_modules
     working_dir: /src
     command: npm run dev
 
@@ -19,20 +21,26 @@ services:
       POSTGRES_PASSWORD: temp
       POSTGRES_DB: Pickmai
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data  # Persist database data
 
   backend:
     build:
-      context: ./backend
+      context: ./backend  # Build backend from backend folder
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/src
+      - ./backend:/src  # Mount backend code
+    environment:
+      PYTHONPATH: /src  # Allow importing modules
+      POSTGRES_USER: temp
+      POSTGRES_PASSWORD: temp
+      POSTGRES_DB: Pickmai
+      POSTGRES_HOST: db  # Database service hostname
+    shm_size: "2gb"  # Increase shared memory for Chrome
+    working_dir: /src  # Set working directory to /src
     command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
-      - db
+      - db  # Ensure database starts before backend
 
 volumes:
   postgres_data:
-
-

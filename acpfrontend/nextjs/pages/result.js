@@ -1,182 +1,185 @@
-import React, { useState } from "react";
-import { Box, Typography, Button, Menu, MenuItem, IconButton, Card, CardMedia, CardContent } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  Alert,
+  Pagination,
+  Menu,
+  MenuItem,
+  Card,
+  CardContent,
+  CardMedia,
+  CircularProgress,
+} from "@mui/material";
 import { useRouter } from "next/router";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import Link from "next/link";
 
-export default function ResultPage({ products }) {
+export default function ResultPage() {
   const router = useRouter();
   const { query } = router.query;
-  const [sortAnchor, setSortAnchor] = useState(null);
-  const [sortMethod, setSortMethod] = useState("Price ↓");
-  const [resultsCount, setResultsCount] = useState(products.length); // Dynamic count based on products data
 
-  const handleSortClick = (event) => {
-    setSortAnchor(event.currentTarget);
-  };
+  const [products, setProducts] = useState([]);
+  const [sortedProducts, setSortedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sortCriteria, setSortCriteria] = useState(""); // Default empty (initial "Choose Sorting")
+  const [currentPage, setCurrentPage] = useState(1);
+  const [anchorEl, setAnchorEl] = useState(null); // Controls the menu dropdown
+  const productsPerPage = 10;
 
-  const handleSortClose = (method) => {
-    setSortAnchor(null);
-    if (method) {
-      setSortMethod(method);
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+  // Fetch products based on the query and sort criteria
+  useEffect(() => {
+    if (query) fetchProducts(query);
+  }, [query]);
+
+  // Re-sort products whenever the sort criteria changes
+  useEffect(() => {
+    if (products.length > 0) sortProducts(sortCriteria);
+  }, [sortCriteria]);
+
+  // Fetch products from the backend
+  const fetchProducts = async (searchQuery) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `${backendUrl}/search?query=${searchQuery}&criteria=${sortCriteria || "price_asc"}`
+      );
+      if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+
+      const data = await response.json();
+      setProducts(data); // Store products in state
+      sortProducts(sortCriteria); // Sort them immediately
+    } catch (error) {
+      setError("Failed to fetch products.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCartClick = () => {
-    router.push("/cart");
+  // Sorting logic
+  const sortProducts = (criteria) => {
+    const sorted = [...products].sort((a, b) => {
+      if (criteria === "price_asc") return a["Price (THB)"] - b["Price (THB)"];
+      if (criteria === "price_desc") return b["Price (THB)"] - a["Price (THB)"];
+      if (criteria === "rating_asc") return a.Rating - b.Rating;
+      if (criteria === "rating_desc") return b.Rating - a.Rating;
+      return 0;
+    });
+    setSortedProducts(sorted);
   };
 
+  // Add a product to the cart (with localStorage)
+  const handleAddToCart = (product) => {
+    const confirmed = window.confirm(`Add ${product.Name} to the cart?`);
+    if (confirmed) {
+      let cart = JSON.parse(localStorage.getItem("cart")) || [];
+      cart.push(product);
+      localStorage.setItem("cart", JSON.stringify(cart));
+      alert(`${product.Name} has been added to your cart.`);
+    }
+  };
+
+  // Handle sorting changes
+  const handleSortChange = (criteria) => {
+    setSortCriteria(criteria); // Set the chosen sort criteria
+    setAnchorEl(null); // Close the menu
+  };
+
+  const handlePageChange = (event, value) => setCurrentPage(value); // Handle pagination
+
+  const openMenu = (event) => setAnchorEl(event.currentTarget); // Open menu
+  const closeMenu = () => setAnchorEl(null); // Close menu
+  const navigateToCart = () => router.push("/cart"); // Navigate to the cart page
+
+  // Pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  if (loading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
+  if (error) return <Alert severity="error">{error}</Alert>;
+
   return (
-    <Box p={4}>
-      {/* Dynamic Title based on search query */}
-      <Typography variant="h4" gutterBottom>
-        <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
-          {query ? `${query}` : "Search Results"}
-        </Link>
-      </Typography>
-
-      {/* Dynamic results count */}
-      <Typography variant="body2" color="textSecondary">
-        {resultsCount} results
-      </Typography>
-
-      {/* Sort by Price button */}
-      <Box display="flex" justifyContent="flex-end" mt={2} mb={3}>
-        <Button
-          onClick={handleSortClick}
-          sx={{
-            color: "#808080", // Gray text
-            "&:hover": {
-              backgroundColor: "transparent", // No background on hover
-            },
-          }}
-        >
-          Sort by {sortMethod}
-        </Button>
-        <Menu
-          anchorEl={sortAnchor}
-          open={Boolean(sortAnchor)}
-          onClose={() => handleSortClose(null)}
-        >
-          <MenuItem onClick={() => handleSortClose("Price ↑")}>Price ↑</MenuItem>
-          <MenuItem onClick={() => handleSortClose("Price ↓")}>Price ↓</MenuItem>
-          <MenuItem onClick={() => handleSortClose("Rating")}>Rating</MenuItem>
-          <MenuItem onClick={() => handleSortClose("Number in stock")}>Number in stock</MenuItem>
-          <MenuItem onClick={() => handleSortClose("Overall value")}>Overall value</MenuItem>
-        </Menu>
-      </Box>
-
-      {/* Product list with larger width */}
-      <Box mb={3} sx={{ maxWidth: "1200px", margin: "0 auto" }}> {/* Increased max width to 1200px */}
-        {products.map((product, index) => (
-          <Card
-            key={index}
-            sx={{
-              display: "flex",
-              mb: 2,
-              p: 2,
-              alignItems: "center",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              width: "100%", // Use full width within the maxWidth
-              justifyContent: "space-between", // Align items to both sides (text to left, price to right)
-            }}
-          >
-            {/* Product Image or Placeholder */}
-            <CardMedia
-              component="img"
-              sx={{
-                width: 100, // Increase image size to match larger product list
-                height: 100,
-                objectFit: "cover",
-                borderRadius: "8px",
-                backgroundColor: product.image ? "transparent" : "#f0f0f0",
-              }}
-              image={product.image || ""}
-              alt={product.title || "No Image"}
-            />
-
-            {/* Product Details */}
-            <CardContent sx={{ flexGrow: 1, paddingLeft: "16px" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>{product.title || "Product Title"}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                By {product.seller || "Unknown Seller"}
-              </Typography>
-            </CardContent>
-
-            {/* Price and See More Button */}
-            <Box display="flex" flexDirection="column" alignItems="flex-end">
-              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                {product.price ? `$${product.price}` : "Price not available"}
-              </Typography>
-              <Link href={product.link || "#"} passHref>
-                <Button
-                  variant="outlined"
-                  sx={{
-                    backgroundColor: "#f0f0f0", // Light gray background
-                    color: "#000000", // Black text
-                    borderColor: "#000000", // Black outline
-                    mt: 1, // Space between price and button
-                    "&:hover": {
-                      backgroundColor: "#e0e0e0", // Slightly darker gray on hover
-                    },
-                  }}
-                >
-                  See more
-                </Button>
-              </Link>
-            </Box>
-          </Card>
-        ))}
-      </Box>
-
-      {/* My Cart Button */}
-      <Box position="fixed" bottom={16} left={16} display="flex" flexDirection="column" alignItems="center">
-        <IconButton
-          onClick={handleCartClick}
-          sx={{
-            backgroundColor: "#ff4081", // Pink background (matching navigation bar)
-            borderRadius: "50%",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-            padding: "10px",
-            "&:hover": {
-              backgroundColor: "#e91e63", // Darker pink on hover
-            },
-          }}
-        >
-          <ShoppingCartIcon sx={{ fontSize: 30, color: "#ffffff" }} /> {/* White icon */}
-        </IconButton>
-        <Typography variant="caption" sx={{ marginTop: "8px", color: "#000000" }}>
-          My Cart
+    <Box p={4} sx={{ maxWidth: "800px", margin: "0 auto", position: "relative" }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4" gutterBottom>
+          Search Results for: {query}
         </Typography>
-      </Box>
+        <Button variant="outlined" onClick={openMenu}>
+          {sortCriteria ? `Sort by ${sortCriteria.replace("_", " ").toUpperCase()}` : "Choose Sorting"}
+        </Button>
+      </Stack>
+      <Typography variant="subtitle1" gutterBottom>
+        {products.length} results
+      </Typography>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+        <MenuItem onClick={() => handleSortChange("price_asc")}>Price: Low to High</MenuItem>
+        <MenuItem onClick={() => handleSortChange("price_desc")}>Price: High to Low</MenuItem>
+        <MenuItem onClick={() => handleSortChange("rating_desc")}>Rating: High to Low</MenuItem>
+        <MenuItem onClick={() => handleSortChange("rating_asc")}>Rating: Low to High</MenuItem>
+      </Menu>
+
+      {currentProducts.map((product, index) => (
+        <Card key={index} sx={{ display: "flex", mb: 2, padding: 2, alignItems: "center" }}>
+          <CardMedia
+            component="img"
+            image={product["Image URL"]}
+            alt={product.Name}
+            sx={{ width: 100, height: 100, objectFit: "contain", marginRight: 2 }}
+          />
+          <CardContent sx={{ flex: 1 }}>
+            <Typography variant="h6">{product.Name}</Typography>
+            <Typography variant="subtitle2" gutterBottom>From {product.Shop}</Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+              <Button
+                onClick={() => handleAddToCart(product)}
+                sx={{
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "20px",
+                  padding: "8px 16px",
+                  fontWeight: "bold",
+                  "&:hover": { backgroundColor: "#e0e0e0" },
+                }}
+              >
+                Put in Cart
+              </Button>
+              <Box textAlign="right">
+                <Typography variant="body1">{product.Rating}/5 ★</Typography>
+                <Typography variant="h6">{product["Price (THB)"].toFixed(2)} THB</Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      ))}
+
+      <Pagination
+        count={Math.ceil(sortedProducts.length / productsPerPage)}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        sx={{ mt: 4, display: "flex", justifyContent: "center" }}
+      />
+
+      <Button
+        variant="contained"
+        onClick={navigateToCart}
+        sx={{
+          position: "fixed",
+          bottom: 16,
+          left: 16,
+          borderRadius: "50%",
+          width: 60,
+          height: 60,
+          backgroundColor: "#FA86C4",
+          color: "#FFFFFF",
+        }}
+      >
+        🛒
+      </Button>
     </Box>
   );
 }
-
-// Sample data that you can replace with your API or imported data
-ResultPage.defaultProps = {
-  products: [
-    {
-      title: "Bayern Munich 24/25 home jersey (Shopee)",
-      seller: "MajpaiFootballShop",
-      price: 71.99,
-      image: "/path/to/image1.jpg",
-      link: "/product/1",
-    },
-    {
-      title: "Bayern 23/24 Oktoberfest Edition (Shopee)",
-      seller: "ChokunChooseJersey",
-      price: 75.99,
-      image: "/path/to/image2.jpg",
-      link: "/product/2",
-    },
-    {
-      title: "Bayern Munich 2024-25 3rd jersey (Lazada)",
-      seller: "MarineMeeShirt",
-      price: 76.99,
-      image: "/path/to/image3.jpg",
-      link: "/product/3",
-    },
-  ],
-};

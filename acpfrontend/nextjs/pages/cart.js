@@ -1,161 +1,141 @@
-import React, { useState } from "react";
-import { Box, Typography, Button, Grid, Card, CardContent, CardMedia, IconButton } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-
-// Sample item data for demonstration
-const sampleItems = [
-  {
-    id: 1,
-    name: "Product 1",
-    price: 50,
-    imageUrl: "https://via.placeholder.com/150",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: "Product 2",
-    price: 30,
-    imageUrl: "https://via.placeholder.com/150",
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: "Product 3",
-    price: 20,
-    imageUrl: "https://via.placeholder.com/150",
-    quantity: 1,
-  }
-];
+import React, { useEffect, useState } from "react";
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  Divider, 
+  Stack, 
+  Card, 
+  CardContent, 
+  CardMedia 
+} from "@mui/material";
+import { useRouter } from "next/router";
 
 export default function CartPage() {
-  const [items, setItems] = useState(sampleItems);
+  const router = useRouter();
+  const [cart, setCart] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
 
-  // Function to handle quantity increment
-  const handleIncrement = (id) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  // Load cart items from localStorage
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
+    calculateTotal(storedCart);
+  }, []);
+
+  const calculateTotal = (cartItems) => {
+    const total = cartItems.reduce((sum, product) => sum + product["Price (THB)"], 0);
+    setTotalPrice(total);
   };
 
-  // Function to handle quantity decrement
-  const handleDecrement = (id) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
-      )
-    );
-  };
-
-  // Function to handle item removal
-  const handleRemoveItem = (id) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
-
-  // Calculate subtotal based on quantities
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingCost = 10;
-  const total = subtotal + shippingCost;
+  const handleCheckout = () => router.push("/checkout"); // Navigate to checkout
+  const handleBackToResults = () => router.push("/"); // Navigate back to results
 
   return (
-    <Box p={4}>
-      {/* Top Section: Shopping Cart */}
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
-        SHOPPING CART ({items.length})
+    <Box p={4} sx={{ maxWidth: "900px", margin: "0 auto" }}>
+      {/* Header */}
+      <Typography variant="h3" fontWeight="bold" gutterBottom>
+        Basket
+      </Typography>
+      <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+        {cart.length} items
       </Typography>
 
-      <Grid container spacing={4}>
-        {/* Left Section: List of items */}
-        <Grid item xs={12} md={8}>
-          {items.map((item) => (
-            <Card key={item.id} sx={{ display: "flex", mb: 2 }}>
+      <Stack direction="row" spacing={2} mt={4}>
+        {/* Cart Items List */}
+        <Box flex={2}>
+          {cart.map((product, index) => (
+            <Card
+              key={index}
+              sx={{
+                display: "flex",
+                mb: 2,
+                padding: 2,
+                alignItems: "center",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+              }}
+            >
               <CardMedia
                 component="img"
-                sx={{ width: 150 }}
-                image={item.imageUrl}
-                alt={item.name}
+                image={product["Image URL"]}
+                alt={product.Name}
+                sx={{
+                  width: 80,
+                  height: 80,
+                  objectFit: "contain",
+                  borderRadius: "8px",
+                  marginRight: 2,
+                }}
               />
-              <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1 }}>
-                <CardContent>
-                  <Typography variant="h6">{item.name}</Typography>
-                  <Typography variant="body2">Price: ${item.price.toFixed(2)}</Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    Total: ${(item.price * item.quantity).toFixed(2)}
-                  </Typography>
-
-                  {/* Quantity Control */}
-                  <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                    <IconButton
-                      onClick={() => handleDecrement(item.id)}
-                      aria-label="decrease quantity"
-                    >
-                      <RemoveIcon />
-                    </IconButton>
-                    <Typography variant="body1" sx={{ mx: 1 }}>
-                      {item.quantity}
-                    </Typography>
-                    <IconButton
-                      onClick={() => handleIncrement(item.id)}
-                      aria-label="increase quantity"
-                    >
-                      <AddIcon />
-                    </IconButton>
-
-                    {/* Remove Button */}
-                    <IconButton
-                      onClick={() => handleRemoveItem(item.id)}
-                      aria-label="delete"
-                      sx={{ ml: 2 }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                </CardContent>
-              </Box>
+              <CardContent sx={{ flex: 1 }}>
+                <Typography variant="h6">{product.Name}</Typography>
+                <Typography variant="subtitle2" color="textSecondary">
+                  {product["Price (THB)"].toFixed(2)} THB
+                </Typography>
+              </CardContent>
             </Card>
           ))}
-        </Grid>
+        </Box>
 
-        {/* Right Section: Order Summary */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Order Summary
-            </Typography>
-            <Typography variant="body1">
-              Subtotal: ${subtotal.toFixed(2)}
-            </Typography>
-            <Typography variant="body1">
-              Shipping: $10.00
-            </Typography>
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Total: ${total.toFixed(2)}
-            </Typography>
+        {/* Price Summary */}
+        <Box
+          flex={1}
+          p={2}
+          sx={{
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+            backgroundColor: "#fafafa",
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Order Summary
+          </Typography>
 
-            {/* Checkout Button */}
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "pink",
-                color: "white",
-                mt: 2,
-                "&:hover": { backgroundColor: "#ff69b4" },
-              }}
-              href="/checkout"
-            >
-              Check Out
-            </Button>
-          </Card>
-        </Grid>
-      </Grid>
+          <Divider sx={{ my: 2 }} />
 
-      {/* Go Back Button */}
-      <Button variant="contained" color="pink" sx={{ mt: 3 }} href="/">
-        Go Back
-      </Button>
+          <Stack spacing={1}>
+            {cart.map((product, index) => (
+              <Box key={index} display="flex" justifyContent="space-between">
+                <Typography variant="body2" color="textSecondary">
+                  {product["Price (THB)"].toFixed(2)} THB
+                </Typography>
+              </Box>
+            ))}
+
+            <Divider sx={{ my: 2 }} />
+
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="h6" fontWeight="bold">
+                Total
+              </Typography>
+              <Typography variant="h6" fontWeight="bold">
+                {totalPrice.toFixed(2)} THB
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            sx={{ mt: 4 }}
+            onClick={handleCheckout}
+          >
+            Checkout
+          </Button>
+
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            sx={{ mt: 2 }}
+            onClick={handleBackToResults}
+          >
+            Back to Results
+          </Button>
+        </Box>
+      </Stack>
     </Box>
   );
 }

@@ -1,118 +1,76 @@
-import React, { useState } from "react";
-import { Box, Typography, TextField, Grid, Button, Card, RadioGroup, FormControlLabel, Radio } from "@mui/material";
-
-// Sample data for demonstration
-const sampleItems = [
-  { id: 1, name: "Product 1", price: 50, quantity: 2 },
-  { id: 2, name: "Product 2", price: 30, quantity: 1 },
-];
+import React, { useEffect, useState } from "react";
+import { 
+  Box, 
+  Typography, 
+  Button, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  Divider, 
+  Stack 
+} from "@mui/material";
+import { useRouter } from "next/router";
 
 export default function CheckoutPage() {
-  const [shippingMethod, setShippingMethod] = useState("normal");
+  const router = useRouter();
+  const [cart, setCart] = useState([]);
 
-  // Calculate subtotal
-  const subtotal = sampleItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const shippingCost = shippingMethod === "normal" ? 5 : 10;
-  const total = subtotal + shippingCost;
+  // Load the cart items from localStorage when the component mounts
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
+  }, []);
+
+  const handleFinish = () => {
+    localStorage.removeItem("cart"); // Clear the cart
+    router.push("/"); // Redirect to the homepage (index.js)
+  };
+
+  const totalPrice = cart.reduce((total, product) => total + product["Price (THB)"], 0);
 
   return (
-    <Box p={4}>
-      {/* Navigation Bar */}
-      <Box sx={{ mb: 3, p: 2, backgroundColor: "#f5f5f5" }}>
-        <Typography variant="h6">Your Website Navigation</Typography>
-      </Box>
-
-      {/* Main Container */}
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
+    <Box p={4} sx={{ maxWidth: "800px", margin: "0 auto" }}>
+      <Typography variant="h4" gutterBottom>
         Checkout
       </Typography>
-      <Grid container spacing={4}>
-        {/* Left Section: Shipping Form */}
-        <Grid item xs={12} md={8}>
-          <Card sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Shipping Address
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField label="First Name" fullWidth />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField label="Last Name" fullWidth />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField label="Street Address" fullWidth />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField label="Further Details" fullWidth />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField label="City" fullWidth />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField label="Province" fullWidth />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField label="Postal Code" fullWidth />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField label="Country" fullWidth />
-              </Grid>
-            </Grid>
-          </Card>
 
-          {/* Shipping Method */}
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Shipping Method
-            </Typography>
-            <RadioGroup
-              value={shippingMethod}
-              onChange={(e) => setShippingMethod(e.target.value)}
-            >
-              <FormControlLabel
-                value="normal"
-                control={<Radio />}
-                label="Normal Shipping - $5"
+      <List>
+        {cart.map((product, index) => (
+          <React.Fragment key={index}>
+            <ListItem alignItems="flex-start">
+              <Box
+                component="img"
+                src={product["Image URL"]}
+                alt={product.Name}
+                sx={{ width: 80, height: 80, objectFit: "contain", marginRight: 2 }}
               />
-              <FormControlLabel
-                value="flash"
-                control={<Radio />}
-                label="Flash Shipping - $10"
+              <ListItemText
+                primary={product.Name}
+                secondary={
+                  <a href={product.URL} target="_blank" rel="noopener noreferrer">
+                    View on {product.Shop}
+                  </a>
+                }
               />
-            </RadioGroup>
-          </Card>
-        </Grid>
+              <Typography variant="body1">
+                {product["Price (THB)"].toFixed(2)} THB
+              </Typography>
+            </ListItem>
+            <Divider />
+          </React.Fragment>
+        ))}
+      </List>
 
-        {/* Right Section: Order Summary */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Order Summary
-            </Typography>
-            <Typography variant="body1">
-              Subtotal: ${subtotal.toFixed(2)}
-            </Typography>
-            <Typography variant="body1">
-              Shipping: ${shippingCost.toFixed(2)}
-            </Typography>
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Total: ${total.toFixed(2)}
-            </Typography>
-
-            {/* Place Order Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ mt: 3 }}
-              fullWidth
-              href="/confirmation"
-            >
-              Place Order
-            </Button>
-          </Card>
-        </Grid>
-      </Grid>
+      <Stack direction="row" justifyContent="space-between" mt={4}>
+        <Typography variant="h6">Total: {totalPrice.toFixed(2)} THB</Typography>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          onClick={handleFinish}
+        >
+          Finish
+        </Button>
+      </Stack>
     </Box>
   );
 }
