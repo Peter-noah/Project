@@ -42,13 +42,21 @@ const ContactPage = () => {
             Customer Care
           </Typography>
           <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
-            <Typography variant="h6">Marine, Customer Care Lead</Typography>
+            <Typography variant="h6">Pino, Lead Director</Typography>
+            <Typography>Tel: 0832299956</Typography>
+            <Typography>Email: pino@kmitl.ac.th</Typography>
+            <Box sx={{ mt: 2 }} />
+            <Typography variant="h6">Chokun, Customer Support</Typography>
+            <Typography>Tel: 0987654321</Typography>
+            <Typography>Email: chokun@kmitl.ac.th</Typography>
+            <Box sx={{ mt: 2 }} />
+            <Typography variant="h6">Marine, Web Designer</Typography>
             <Typography>Tel: 0123456789</Typography>
             <Typography>Email: marine@kmitl.ac.th</Typography>
             <Box sx={{ mt: 2 }} />
-            <Typography variant="h6">Chokun, Customer Care</Typography>
+            <Typography variant="h6">Maipai, Defensive Midfielder</Typography>
             <Typography>Tel: 0987654321</Typography>
-            <Typography>Email: chokun@kmitl.ac.th</Typography>
+            <Typography>Email: maipai@kmitl.ac.th</Typography>
           </Box>
         </Grid>
       </Grid>
