@@ -8,6 +8,34 @@ export default function Document(props) {
   return (
     <Html lang="en">
       <Head>
+        <link
+          rel="preload"
+          href="/Prompt/Prompt-Regular.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/Prompt/Prompt-Medium.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/Prompt/Prompt-Light.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/Prompt/Prompt-Thin.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
         <DocumentHeadTags {...props} />
       </Head>
       <body>

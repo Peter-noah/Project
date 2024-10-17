@@ -1,13 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Typography, Avatar, Button } from "@mui/material";
-import { useRouter } from "next/router";  // Import useRouter for navigation
+import { useRouter } from "next/router";
 
 export default function HomePage() {
   const router = useRouter();  // Initialize router
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const userData = JSON.parse(localStorage.getItem("userData"));
+
+    if (!token || !userData) {
+      router.replace("/login"); // Redirect if not logged in
+    } else {
+      setUsername(userData.username); // Set the username from local storage
+    }
+  }, [router]);
 
   const handleGoShoppingClick = () => {
-    // Redirect to the search page or focus the search bar in the NavigationBar
-    router.push("/");  // Navigates to the home page, where the search bar is located
+    // Add query parameter to trigger search
+    router.push("/?triggerSearch=true");  // Navigates to the home page with search bar triggered
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    router.push("/login");  // Redirect to login page on logout
   };
 
   return (
@@ -19,21 +37,23 @@ export default function HomePage() {
       minHeight="100vh"
       bgcolor="#f0f0f0"  // Light gray background
     >
-      {/* Profile Picture */}
+      {/* Profile Picture or Initials Avatar */}
       <Avatar
         alt="User Profile"
-        src="/images/profile-placeholder.png" // Placeholder profile picture
+        src="/images/profile-placeholder.png"  // Placeholder profile picture
         sx={{ width: 120, height: 120, mb: 2 }}
-      />
+      >
+        {username ? username.charAt(0).toUpperCase() : "?"}  {/* Fallback to '?' */}
+      </Avatar>
 
       {/* Welcome Message */}
       <Typography
         variant="h5"
         fontWeight="bold"
         gutterBottom
-        sx={{ color: "#333333" }}  /* Darker gray text for readability */
+        sx={{ color: "#333333" }}  // Darker gray text for readability
       >
-        Welcome, User
+        Welcome, {username || "User"}
       </Typography>
 
       {/* Title */}
@@ -41,7 +61,7 @@ export default function HomePage() {
         variant="h3"
         fontWeight="bold"
         gutterBottom
-        sx={{ color: "#333333" }}  /* Darker gray text for readability */
+        sx={{ color: "#333333" }}  // Darker gray text for readability
       >
         PICKMAI
       </Typography>
@@ -50,9 +70,9 @@ export default function HomePage() {
       <Typography
         variant="h6"
         gutterBottom
-        sx={{ color: "#555555" }}  /* Slightly lighter dark gray for subtitle */
+        sx={{ color: "#555555" }}  // Slightly lighter dark gray for subtitle
       >
-        Your smart shopping assistant
+        I am your smart shopping assistant
       </Typography>
 
       {/* Go Shopping Button */}
@@ -63,13 +83,30 @@ export default function HomePage() {
         sx={{
           mt: 2,  // Adds margin to the top of the button
           backgroundColor: "#A9A9A9",  // Medium gray button
-          color: "#ffffff",  // White text on the button for contrast
+          color: "#ffffff",  // White text for contrast
           "&:hover": {
-            backgroundColor: "#7D7C7C",  // Darker gray on hover for contrast
+            backgroundColor: "#7D7C7C",  // Darker gray on hover
           },
         }}
       >
         Go shopping
+      </Button>
+
+      {/* Logout Button */}
+      <Button
+        variant="outlined"
+        size="large"
+        onClick={handleLogout}
+        sx={{
+          mt: 2,  // Margin-top for spacing
+          borderColor: "#333333",  // Dark gray border
+          color: "#333333",  // Matching text color
+          "&:hover": {
+            backgroundColor: "#f5f5f5",  // Slightly lighter gray on hover
+          },
+        }}
+      >
+        Logout
       </Button>
     </Box>
   );

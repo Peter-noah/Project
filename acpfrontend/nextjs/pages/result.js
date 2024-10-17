@@ -23,9 +23,9 @@ export default function ResultPage() {
   const [sortedProducts, setSortedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sortCriteria, setSortCriteria] = useState(""); // Default empty (initial "Choose Sorting")
+  const [sortCriteria, setSortCriteria] = useState(""); 
   const [currentPage, setCurrentPage] = useState(1);
-  const [anchorEl, setAnchorEl] = useState(null); // Controls the menu dropdown
+  const [anchorEl, setAnchorEl] = useState(null); 
   const productsPerPage = 10;
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
@@ -51,8 +51,8 @@ export default function ResultPage() {
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
       const data = await response.json();
-      setProducts(data); // Store products in state
-      sortProducts(sortCriteria); // Sort them immediately
+      setProducts(data);
+      sortProducts(sortCriteria);
     } catch (error) {
       setError("Failed to fetch products.");
     } finally {
@@ -77,23 +77,63 @@ export default function ResultPage() {
     const confirmed = window.confirm(`Add ${product.Name} to the cart?`);
     if (confirmed) {
       let cart = JSON.parse(localStorage.getItem("cart")) || [];
-      cart.push(product);
+      
+      // Check if the item is already in the cart
+      const itemExists = cart.some((item) => item.id === product.id);
+      if (itemExists) {
+        alert(`${product.Name} is already in your cart.`);
+        return;
+      }
+
+      // Add product with unique ID
+      cart.push({ ...product, id: `${product.Name}-${product.Shop}` });
       localStorage.setItem("cart", JSON.stringify(cart));
       alert(`${product.Name} has been added to your cart.`);
     }
   };
 
-  // Handle sorting changes
-  const handleSortChange = (criteria) => {
-    setSortCriteria(criteria); // Set the chosen sort criteria
-    setAnchorEl(null); // Close the menu
+  // Add a product to favorites (new functionality)
+  const handleAddToFavorites = async (product) => {
+    const confirmed = window.confirm(`Add ${product.Name} to your favorites?`);
+    if (confirmed) {
+      try {
+        const response = await fetch(`${backendUrl}/api/favorites/add`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",  // Ensure session cookies are sent
+          body: JSON.stringify({
+            product_name: product.Name,
+            shop: product.Shop,
+            price_thb: product["Price (THB)"],
+            rating: product.Rating || 0,
+            product_url: product.URL,
+            image_url: product["Image URL"]
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          alert(`${product.Name} has been added to your favorites.`);
+        } else {
+          alert(`Error: ${data.detail}`);
+        }
+      } catch (error) {
+        console.error("Error adding to favorites:", error);
+      }
+    }
   };
 
-  const handlePageChange = (event, value) => setCurrentPage(value); // Handle pagination
+  // Handle sorting changes
+  const handleSortChange = (criteria) => {
+    setSortCriteria(criteria);
+    setAnchorEl(null);
+  };
 
-  const openMenu = (event) => setAnchorEl(event.currentTarget); // Open menu
-  const closeMenu = () => setAnchorEl(null); // Close menu
-  const navigateToCart = () => router.push("/cart"); // Navigate to the cart page
+  const handlePageChange = (event, value) => setCurrentPage(value);
+  const openMenu = (event) => setAnchorEl(event.currentTarget);
+  const closeMenu = () => setAnchorEl(null);
+  const navigateToCart = () => router.push("/cart");
 
   // Pagination logic
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -135,18 +175,33 @@ export default function ResultPage() {
             <Typography variant="h6">{product.Name}</Typography>
             <Typography variant="subtitle2" gutterBottom>From {product.Shop}</Typography>
             <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
-              <Button
-                onClick={() => handleAddToCart(product)}
-                sx={{
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "20px",
-                  padding: "8px 16px",
-                  fontWeight: "bold",
-                  "&:hover": { backgroundColor: "#e0e0e0" },
-                }}
-              >
-                Put in Cart
-              </Button>
+              <Box>
+                <Button
+                  onClick={() => handleAddToCart(product)}
+                  sx={{
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "20px",
+                    padding: "8px 16px",
+                    fontWeight: "bold",
+                    "&:hover": { backgroundColor: "#e0e0e0" },
+                    marginRight: 2,  // Spacing between buttons
+                  }}
+                >
+                  Put in Cart
+                </Button>
+                <Button
+                  onClick={() => handleAddToFavorites(product)}  // Add to favorites
+                  sx={{
+                    backgroundColor: "#e0f7fa",
+                    borderRadius: "20px",
+                    padding: "8px 16px",
+                    fontWeight: "bold",
+                    "&:hover": { backgroundColor: "#b2ebf2" },
+                  }}
+                >
+                  Add to Favorites
+                </Button>
+              </Box>
               <Box textAlign="right">
                 <Typography variant="body1">{product.Rating}/5 ★</Typography>
                 <Typography variant="h6">{product["Price (THB)"].toFixed(2)} THB</Typography>

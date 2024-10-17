@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -9,15 +9,25 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import { useRouter } from "next/router";
 
 export default function AuthPage() {
-  const [identifier, setIdentifier] = useState(""); // Combined username/email
-  const [password_hash, setpassword_hash] = useState("");
+  const [identifier, setIdentifier] = useState(""); // Username or email
+  const [password_hash, setPasswordHash] = useState("");
   const [identifierError, setIdentifierError] = useState(false);
-  const [password_hashError, setpassword_hashError] = useState(false);
+  const [passwordHashError, setPasswordHashError] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      router.replace("/home"); // Redirect if already logged in
+    }
+  }, [router]);
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") return;
@@ -35,10 +45,10 @@ export default function AuthPage() {
     }
 
     if (!password_hash) {
-      setpassword_hashError(true);
+      setPasswordHashError(true);
       isValid = false;
     } else {
-      setpassword_hashError(false);
+      setPasswordHashError(false);
     }
 
     return isValid;
@@ -46,14 +56,15 @@ export default function AuthPage() {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Validate input fields
     if (!validateInputs()) {
       setSnackbarMessage("Please fill in all required fields.");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
       return;
     }
-
+  
     try {
       const response = await fetch("/api/users/login", {
         method: "POST",
@@ -61,25 +72,29 @@ export default function AuthPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          identifier: identifier, // Use 'identifier' instead of separate username/email
-          password_hash: password_hash, // Send raw password_hash
+          identifier: identifier,    // Username or email
+          password_hash: password_hash, // Raw password
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Login failed");
       }
-
-      // Assuming the response contains user data or tokens
+  
       const data = await response.json();
+  
+      // Store auth token and user data
+      localStorage.setItem("authToken", data.token);
+      localStorage.setItem("userData", JSON.stringify(data));
+  
       setSnackbarMessage("Login successful!");
       setSnackbarSeverity("success");
       setOpenSnackbar(true);
-
-      // Redirect to the home page after a short delay to allow users to see the success message
+  
+      // Redirect after success
       setTimeout(() => {
-        window.location.href = "/home";
+        router.replace("/home");
       }, 1500);
     } catch (error) {
       setSnackbarMessage(error.message);
@@ -97,7 +112,12 @@ export default function AuthPage() {
       bgcolor="#f9f9f9"
     >
       <Paper elevation={3} sx={{ padding: 4, width: 360 }}>
-        <Typography variant="h4" textAlign="center" fontWeight="bold" gutterBottom>
+        <Typography
+          variant="h4"
+          textAlign="center"
+          fontWeight="bold"
+          gutterBottom
+        >
           Log In
         </Typography>
         <Typography
@@ -129,13 +149,13 @@ export default function AuthPage() {
           />
 
           <TextField
-            label="password"
+            label="Password"
             type="password"
             fullWidth
             value={password_hash}
-            onChange={(e) => setpassword_hash(e.target.value)}
-            error={password_hashError}
-            helperText={password_hashError ? "Please enter your password_hash" : ""}
+            onChange={(e) => setPasswordHash(e.target.value)}
+            error={passwordHashError}
+            helperText={passwordHashError ? "Please enter your password" : ""}
           />
 
           <Link

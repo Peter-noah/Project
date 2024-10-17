@@ -1,2 +1,16 @@
+# Python bytecode and caches
+__pycache__/
 *.pyc
-*.DS_Store
+
+# macOS specific files
+.DS_Store
+
+# Next.js build and cache folders
+.next/
+.next/cache/
+
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log

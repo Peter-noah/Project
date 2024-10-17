@@ -1,0 +1,16 @@
+# Python compiled files and caches
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
+
+# Next.js build files and caches
+.next/
+.next/cache/
+
+# Node.js dependencies
+node_modules/
+
+# Log files
+*.log

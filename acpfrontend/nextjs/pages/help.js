@@ -56,7 +56,7 @@ export default function HelpPage() {
             </AccordionSummary>
             <AccordionDetails>
               <Typography>
-                Use the search box at the top of the page to find items. You can sort results by price, rating, stock, or overall value.
+                Use the search box at the top of the page to find items. You can sort results for you liking whether it would be rating or price.
               </Typography>
             </AccordionDetails>
           </Accordion>

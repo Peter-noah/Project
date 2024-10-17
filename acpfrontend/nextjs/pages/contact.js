@@ -43,7 +43,7 @@ const ContactPage = () => {
           </Typography>
           <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
             <Typography variant="h6">Pino, Lead Director</Typography>
-            <Typography>Tel: 0832299956</Typography>
+            <Typography>Tel: 1101101010</Typography>
             <Typography>Email: pino@kmitl.ac.th</Typography>
             <Box sx={{ mt: 2 }} />
             <Typography variant="h6">Chokun, Customer Support</Typography>
@@ -54,7 +54,7 @@ const ContactPage = () => {
             <Typography>Tel: 0123456789</Typography>
             <Typography>Email: marine@kmitl.ac.th</Typography>
             <Box sx={{ mt: 2 }} />
-            <Typography variant="h6">Maipai, Defensive Midfielder</Typography>
+            <Typography variant="h6">Maipai, Midfielder</Typography>
             <Typography>Tel: 0987654321</Typography>
             <Typography>Email: maipai@kmitl.ac.th</Typography>
           </Box>

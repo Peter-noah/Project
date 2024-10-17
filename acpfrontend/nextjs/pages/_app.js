@@ -3,22 +3,14 @@ import React from "react";
 import { useRouter } from "next/router";
 import { AppCacheProvider } from "@mui/material-nextjs/v13-pagesRouter";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { Roboto } from "next/font/google";
 import Layout from "@/components/layout";
 import useBearStore from "@/store/useBearStore";
 import Head from "next/head";
 import { Backdrop, CircularProgress } from "@mui/material";
 
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-  display: "swap",
-});
-
 const theme = createTheme({
-  palette: {},
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: 'Prompt, sans-serif', // Use Prompt as the global font
   },
 });
 
@@ -31,8 +23,7 @@ export default function App({ Component, pageProps, props }) {
   React.useEffect(() => {
     console.log("App load", pageName, router.query);
     setLoading(true);
-    // TODO: This section is use to handle page change.
-    setAppName("PickMai")
+    setAppName("PickMai");
     setLoading(false);
   }, [router, pageName]);
 
